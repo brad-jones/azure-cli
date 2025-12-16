@@ -1,0 +1,22 @@
+[workspace]
+name = "azure-cli"
+authors = ["Brad Jones <brad@bjc.id.au>"]
+channels = ["https://prefix.dev/brads-forge", "conda-forge"]
+platforms = ["linux-64", "win-64", "osx-64", "osx-arm64"]
+
+[tasks]
+init = "task init"
+
+[tasks.code]
+depends-on = ["init"]
+cmd = "code ."
+
+[dependencies]
+python = ">=3.14.2,<3.15"
+go = ">=1.25.5,<2"
+deno = ">=2.6.0,<2.7"
+task = ">=3.45.5,<4"
+lefthook = ">=2.0.11,<3"
+dprint = ">=0.50.2,<0.51"
+cocogitto = ">=6.5.0,<7"
+gh = ">=2.83.2,<3"

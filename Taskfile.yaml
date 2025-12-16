@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+# https://taskfile.dev
+version: 3
+
+dotenv: [".env"]
+set: [pipefail]
+shopt: [globstar]
+
+tasks:
+  init:
+    desc: Setup dev env (anything that pixi can't install and setup for us).
+    cmds:
+      - lefthook install -f
+      - git config pull.rebase true
+      - git config core.editor "code --wait"
+      - git config commit.template "$PWD/.gitmsgtpl"
+      - "{{if .CI}}git config --global user.name github-actions[bot]{{end}}"
+      - "{{if .CI}}git config --global user.email github-actions[bot]@users.noreply.github.com{{end}}"
+
+  build:
+    cmds:
+      - deno run -qA ./scripts/build.ts
+
+  publish:
+    cmds:
+      - deno run -qA ./scripts/publish.ts
