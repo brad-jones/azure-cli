@@ -74,6 +74,10 @@ if (Deno.build.os === "windows") {
   console.log(`installing azure-cli`);
   await $`${pipPath} install -U ${`azure-cli==${latestVersion}`}`;
 
+  if (Deno.build.os === "darwin") {
+    await $`brew install tree`;
+  }
+
   console.log("VENV TREE");
   await $`tree ${venvPath}`;
 
