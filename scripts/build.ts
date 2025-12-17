@@ -83,7 +83,3 @@ let goSrc = await Deno.readTextFile(goMainPath);
 goSrc = goSrc.replace(/var venvTarballSha256 = ".*?"/, `var venvTarballSha256 = "${tarballHash}"`);
 await Deno.writeTextFile(goMainPath, goSrc);
 await $`go build -o ${binPath} ${goMainPath}`.env("CGO_ENABLED", "0");
-
-// Test the wrapper
-await $`${binPath} --version`;
-await $`${binPath} --help`;

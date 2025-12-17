@@ -21,6 +21,10 @@ tasks:
     cmds:
       - deno run -qA ./scripts/build.ts
 
+  test:
+    cmds:
+      - deno test -qA ./scripts/test.ts
+
   publish:
     cmds:
       - deno run -qA ./scripts/publish.ts

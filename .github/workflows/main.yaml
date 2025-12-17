@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         include:
           - { target: linux-64, os: ubuntu-latest }
@@ -38,8 +38,35 @@ jobs:
           retention-days: 1
           compression-level: 0
 
-  publish:
+  test:
     needs: [build]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - { target: linux-64, os: ubuntu-latest }
+          - { target: win-64, os: windows-latest }
+          - { target: osx-64, os: macos-15-intel }
+          - { target: osx-arm64, os: macos-latest }
+    steps:
+      - name: ⬇️ Git Checkout
+        uses: actions/checkout@v6
+
+      - name: ⬇️ Download Artifacts from build
+        uses: actions/download-artifact@v7
+        with:
+          name: ${{ matrix.target }}
+          path: ./bin
+
+      # Dont use pixi to ensure we do not bring any python things into the env
+      - uses: go-task/setup-task@v1
+      - uses: denoland/setup-deno@v2
+
+      - run: task test
+
+  publish:
+    needs: [test]
     runs-on: ubuntu-latest
     permissions:
       id-token: write
