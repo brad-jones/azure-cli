@@ -23,7 +23,7 @@ tasks:
 
   test:
     cmds:
-      - deno test -qA ./scripts/test.ts
+      - deno test -A ./scripts/test.ts
 
   publish:
     cmds:
