@@ -74,19 +74,19 @@ if (Deno.build.os === "windows") {
   console.log(`installing azure-cli`);
   await $`${pipPath} install -U ${`azure-cli==${latestVersion}`}`;
 
-  if (Deno.build.os === "darwin") {
-    await $`brew install tree`;
-  }
+  //if (Deno.build.os === "darwin") {
+  //  await $`brew install tree`;
+  //}
 
-  console.log("VENV TREE");
-  await $`tree ${venvPath}`;
+  //console.log("VENV TREE");
+  //await $`tree ${venvPath}`;
 
-  console.log("PIXI TREE");
-  await $`tree ${join(import.meta.dirname!, `../.pixi/envs/default`)}`;
+  //console.log("PIXI TREE");
+  //await $`tree ${join(import.meta.dirname!, `../.pixi/envs/default`)}`;
 
   console.log(`copying system libs into venv`);
   const systemPythonLibs = join(import.meta.dirname!, `../.pixi/envs/default/lib/python${shortPythonVersion}`);
-  await $`sh -c ${`cp -r ${`${systemPythonLibs}/.`} ${`${venvPath}/lib64/python${shortPythonVersion}/`}`}`;
+  await $`sh -c ${`cp -r ${`${systemPythonLibs}/.`} ${`${venvPath}/lib/python${shortPythonVersion}/`}`}`;
 }
 
 // Create the venv tarball
