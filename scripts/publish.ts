@@ -1,8 +1,10 @@
 #!/usr/bin/env -S deno run -qA --ext=ts
+import { outdent } from "jsr:@cspotcode/outdent@0.8.0";
 import { $ } from "jsr:@david/dax@0.44.1";
 import { exists } from "jsr:@std/fs@1.0.20";
+import { z } from "jsr:@zod/zod@4.2.0";
 import ky from "npm:ky@1.14.1";
-import { BUILD_NO } from "./build_no.ts";
+import { BUILD_NO, BUILD_NO_RELEASE_NOTES } from "./build_no.ts";
 
 // Double check we actually have something to publish
 if (!await exists("./bin/linux-64/az")) {
@@ -42,7 +44,21 @@ const versionNotes = nextVersionIndex === -1
   ? upstreamReleaseNotes.substring(sectionStart).trim()
   : upstreamReleaseNotes.substring(sectionStart, nextVersionIndex).trim();
 
-const releaseNotes = `${versionNotes}
+// If the build no has incremented, lets show the release notes for that change.
+const lastBuildNo = parseInt(
+  z.array(z.object({ tagName: z.string() })).parse(await $`gh release list --limit 1 --json tagName`.json())[0].tagName
+    .split("+")[1],
+);
+const buildNoReleaseNotes = BUILD_NO > lastBuildNo
+  ? outdent`
+    ## Go Wrapper Changes
+
+    ${BUILD_NO_RELEASE_NOTES[BUILD_NO]}
+
+  `
+  : "";
+
+const releaseNotes = `${buildNoReleaseNotes}${versionNotes}
 
 _see: <https://github.com/MicrosoftDocs/azure-docs-cli/blob/main/docs-ref-conceptual/Latest-version/release-notes-azure-cli.md>_
 `;

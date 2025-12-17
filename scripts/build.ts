@@ -59,7 +59,7 @@ if (Deno.build.os === "windows") {
 } else {
   // Create the venv
   console.log(`creating new venv`);
-  await $`python -m venv ${venvPath}`;
+  await $`python -m venv --copies ${venvPath}`;
 
   const pipPath = join(venvPath, "bin", "pip");
 
