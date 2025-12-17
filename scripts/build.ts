@@ -9,6 +9,11 @@ import { z } from "jsr:@zod/zod@4.2.0";
 import ky from "npm:ky@1.14.1";
 import { BUILD_NO } from "./build_no.ts";
 
+// Grab the python version
+// Need it for finding system libs
+const pythonVersion = (await $`python -V`.text()).split(" ")[1].trim();
+const shortPythonVersion = pythonVersion.split(".").slice(0, 2).join(".");
+
 // Compare the latest version from pypi with the latest tag of this repo
 const latestVersion = z.object({ info: z.object({ version: z.string() }) }).parse(
   await ky.get(`https://pypi.org/pypi/azure-cli/json`).json(),
@@ -68,6 +73,10 @@ if (Deno.build.os === "windows") {
 
   console.log(`installing azure-cli`);
   await $`${pipPath} install -U ${`azure-cli==${latestVersion}`}`;
+
+  console.log(`copying system libs into venv`);
+  const systemPythonLibs = join(import.meta.dirname!, `../.pixi/envs/default/lib/python${shortPythonVersion}`);
+  await $`sh -c ${`cp -r ${`${systemPythonLibs}/.`} ${`${venvPath}/lib64/python${shortPythonVersion}/`}`}`;
 }
 
 // Create the venv tarball
