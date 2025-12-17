@@ -42,7 +42,7 @@ func main() {
 	args := append([]string{pythonPath, "-m", "azure.cli"}, os.Args[1:]...)
 
 	// Set VIRTUAL_ENV environment variable
-	env := append(os.Environ(), "VIRTUAL_ENV="+tempDir)
+	env := append(os.Environ(), "VIRTUAL_ENV="+tempDir, "PYTHONHOME="+tempDir)
 
 	if runtime.GOOS != "windows" {
 		// On Unix-like systems, replace the current process
