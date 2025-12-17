@@ -2,6 +2,10 @@ import { $ } from "jsr:@david/dax@0.44.1";
 
 const exeSuffix = Deno.build.os === "windows" ? ".exe" : "";
 
+if (Deno.build.os !== "windows") {
+  await $`chmod +x ./bin/az${exeSuffix}`;
+}
+
 Deno.test("version some test", async () => {
   await $`./bin/az${exeSuffix} --version`;
 });
