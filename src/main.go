@@ -41,9 +41,12 @@ func main() {
 	}
 	args := append([]string{pythonPath, "-m", "azure.cli"}, os.Args[1:]...)
 
+	// Set VIRTUAL_ENV environment variable
+	env := append(os.Environ(), "VIRTUAL_ENV="+tempDir)
+
 	if runtime.GOOS != "windows" {
 		// On Unix-like systems, replace the current process
-		if err := syscall.Exec(pythonPath, args, os.Environ()); err != nil {
+		if err := syscall.Exec(pythonPath, args, env); err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to exec python: %v\n", err)
 			os.Exit(1)
 		}
@@ -53,6 +56,7 @@ func main() {
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
+		cmd.Env = env
 
 		if err := cmd.Run(); err != nil {
 			if exitErr, ok := err.(*exec.ExitError); ok {
