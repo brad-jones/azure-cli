@@ -74,6 +74,12 @@ if (Deno.build.os === "windows") {
   console.log(`installing azure-cli`);
   await $`${pipPath} install -U ${`azure-cli==${latestVersion}`}`;
 
+  console.log("VENV TREE");
+  await $`tree ${venvPath}`;
+
+  console.log("PIXI TREE");
+  await $`tree ${join(import.meta.dirname!, `../.pixi/envs/default`)}`;
+
   console.log(`copying system libs into venv`);
   const systemPythonLibs = join(import.meta.dirname!, `../.pixi/envs/default/lib/python${shortPythonVersion}`);
   await $`sh -c ${`cp -r ${`${systemPythonLibs}/.`} ${`${venvPath}/lib64/python${shortPythonVersion}/`}`}`;
