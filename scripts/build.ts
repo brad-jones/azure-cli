@@ -3,7 +3,7 @@ import { $ } from "jsr:@david/dax@0.44.1";
 import { zip } from "jsr:@deno-library/compress@0.5.6";
 import { crypto } from "jsr:@std/crypto@1.0.5";
 import { encodeHex } from "jsr:@std/encoding@1.0.10";
-import { emptyDir } from "jsr:@std/fs@1.0.20";
+import { emptyDir, exists } from "jsr:@std/fs@1.0.20";
 import { dirname, join } from "jsr:@std/path@1.1.3";
 import { z } from "jsr:@zod/zod@4.2.0";
 import ky from "npm:ky@1.14.1";
@@ -66,7 +66,7 @@ if (Deno.build.os === "windows") {
   await $`pixi pack --create-executable -o ${`${venvPath}/venv/pixi.sh`}`.cwd(venvPath);
   await Deno.remove(`${venvPath}/venv/bin`, { recursive: true });
   await Deno.remove(`${venvPath}/venv/include`, { recursive: true });
-  await Deno.remove(`${venvPath}/venv/lib64`, { recursive: true });
+  if (await exists(`${venvPath}/venv/lib64`)) await Deno.remove(`${venvPath}/venv/lib64`, { recursive: true });
   await Deno.remove(`${venvPath}/venv/.gitignore`, { recursive: true });
   await Deno.remove(`${venvPath}/venv/pyvenv.cfg`, { recursive: true });
   await $`mv ${venvPath}/venv ${join(import.meta.dirname!, "../src/venv2")}`;
