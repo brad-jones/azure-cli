@@ -34,10 +34,11 @@ func main() {
 		pixiScript := filepath.Join(tempDir, "pixi.sh")
 		if _, err := os.Stat(pixiScript); err == nil {
 			cmd := exec.Command(pixiScript, "-o", tempDir)
-			cmd.Stdout = os.Stderr
-			cmd.Stderr = os.Stderr
+			var output bytes.Buffer
+			cmd.Stdout = &output
+			cmd.Stderr = &output
 			if err := cmd.Run(); err != nil {
-				fmt.Fprintf(os.Stderr, "Failed to extract pixi env: %v\n", err)
+				fmt.Fprintf(os.Stderr, "Failed to extract pixi env: %v\n%s", err, output.String())
 				os.Exit(1)
 			}
 		}

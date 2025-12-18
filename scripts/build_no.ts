@@ -7,11 +7,10 @@ export const BUILD_NO = 3;
 
 export const BUILD_NO_RELEASE_NOTES = {
   3: outdent`
-    Our venv still does not have everything needed to function standalone.
-    There is still some sort of environment isolation problem that we need to solve.
+    The Linux and OSX venv are now also augmented with a pixi environment
+    that supplies python along with any other shared libs. Like OpenSSL.
 
-    By running the tests in completely isolated github action runners we are
-    simulating the real world scenario more closely.
+    see: <https://pixi.sh/latest/deployment/pixi_pack>
   `,
   2: outdent`
     Use python -m venv --copies so that we don't symlink to the host
