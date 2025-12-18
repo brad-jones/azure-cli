@@ -9,11 +9,6 @@ import { z } from "jsr:@zod/zod@4.2.0";
 import ky from "npm:ky@1.14.1";
 import { BUILD_NO } from "./build_no.ts";
 
-// Grab the python version
-// Need it for finding system libs
-const pythonVersion = (await $`python -V`.text()).split(" ")[1].trim();
-const shortPythonVersion = pythonVersion.split(".").slice(0, 2).join(".");
-
 // Compare the latest version from pypi with the latest tag of this repo
 const latestVersion = z.object({ info: z.object({ version: z.string() }) }).parse(
   await ky.get(`https://pypi.org/pypi/azure-cli/json`).json(),
@@ -63,30 +58,20 @@ if (Deno.build.os === "windows") {
   await zip.uncompress(zipFilePath, venvPath);
 } else {
   // Create the venv
-  console.log(`creating new venv`);
-  await $`python -m venv --copies ${venvPath}`;
-
-  const pipPath = join(venvPath, "bin", "pip");
-
-  console.log(`updating pip`);
-  await $`${pipPath} install -U pip setuptools`;
-
-  console.log(`installing azure-cli`);
-  await $`${pipPath} install -U ${`azure-cli==${latestVersion}`}`;
-
-  //if (Deno.build.os === "darwin") {
-  //  await $`brew install tree`;
-  //}
-
-  //console.log("VENV TREE");
-  //await $`tree ${venvPath}`;
-
-  //console.log("PIXI TREE");
-  //await $`tree ${join(import.meta.dirname!, `../.pixi/envs/default`)}`;
-
-  console.log(`copying system libs into venv`);
-  const systemPythonLibs = join(import.meta.dirname!, `../.pixi/envs/default/lib/python${shortPythonVersion}`);
-  await $`sh -c ${`cp -r ${`${systemPythonLibs}/.`} ${`${venvPath}/lib/python${shortPythonVersion}/`}`}`;
+  await $`pixi init ${venvPath}`;
+  await $`pixi add python`.cwd(venvPath);
+  await $`pixi exec python -m venv ./venv`.cwd(venvPath);
+  await $`${`${venvPath}/venv/bin/pip`} install -U pip setuptools`.cwd(venvPath);
+  await $`${`${venvPath}/venv/bin/pip`} install ${`azure-cli==${latestVersion}`}`.cwd(venvPath);
+  await $`pixi pack --create-executable -o ${`${venvPath}/venv/pixi.sh`}`.cwd(venvPath);
+  await Deno.remove(`${venvPath}/venv/bin`, { recursive: true });
+  await Deno.remove(`${venvPath}/venv/include`, { recursive: true });
+  await Deno.remove(`${venvPath}/venv/lib64`, { recursive: true });
+  await Deno.remove(`${venvPath}/venv/.gitignore`, { recursive: true });
+  await Deno.remove(`${venvPath}/venv/pyvenv.cfg`, { recursive: true });
+  await $`mv ${venvPath}/venv ${join(import.meta.dirname!, "../src/venv2")}`;
+  await $`rm -rf ${venvPath}`;
+  await $`mv ${join(import.meta.dirname!, "../src/venv2")} ${venvPath}`;
 }
 
 // Create the venv tarball

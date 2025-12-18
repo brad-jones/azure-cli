@@ -12,7 +12,6 @@ depends-on = ["init"]
 cmd = "code ."
 
 [dependencies]
-python = ">=3.14.2,<3.15"
 go = ">=1.25.5,<2"
 deno = ">=2.6.0,<2.7"
 task = ">=3.45.5,<4"

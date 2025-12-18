@@ -17,7 +17,7 @@ import (
 
 //go:embed venv.tar.gz
 var venvTarball []byte
-var venvTarballSha256 = ""
+var venvTarballSha256 = "45f711b17d421783be276c284e52199d64becf19a51c522e5dc6a69e055dbda3"
 
 func main() {
 	// Create temp directory path based on SHA256
@@ -29,20 +29,33 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Failed to extract venv: %v\n", err)
 			os.Exit(1)
 		}
+
+		// Extract the bundled pixi environment
+		pixiScript := filepath.Join(tempDir, "pixi.sh")
+		if _, err := os.Stat(pixiScript); err == nil {
+			cmd := exec.Command(pixiScript, "-o", tempDir)
+			cmd.Stdout = os.Stderr
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				fmt.Fprintf(os.Stderr, "Failed to extract pixi env: %v\n", err)
+				os.Exit(1)
+			}
+		}
 	}
 
 	// Clean up old venv directories from previous versions
 	cleanupOldVenvs(tempDir)
 
 	// Execute Python with azure.cli module
-	pythonPath := filepath.Join(tempDir, "bin", "python")
+	pythonPath := filepath.Join(tempDir, "env", "bin", "python")
 	if runtime.GOOS == "windows" {
 		pythonPath = filepath.Join(tempDir, "python.exe")
 	}
 	args := append([]string{pythonPath, "-m", "azure.cli"}, os.Args[1:]...)
 
-	// Set VIRTUAL_ENV environment variable
-	env := append(os.Environ(), "VIRTUAL_ENV="+tempDir, "PYTHONHOME="+tempDir)
+	// Discover Python version dynamically
+	pythonVersion := getPythonVersion(tempDir)
+	env := append(os.Environ(), "PYTHONPATH="+tempDir+"/lib/python"+pythonVersion+"/site-packages:"+tempDir+"/env/lib/python"+pythonVersion)
 
 	if runtime.GOOS != "windows" {
 		// On Unix-like systems, replace the current process
@@ -138,6 +151,24 @@ func extractTarball(data []byte, destDir string) error {
 	}
 
 	return nil
+}
+
+func getPythonVersion(tempDir string) string {
+	// Check the lib directory for python version subdirectories
+	libDir := filepath.Join(tempDir, "lib")
+	entries, err := os.ReadDir(libDir)
+	if err == nil {
+		for _, entry := range entries {
+			if entry.IsDir() && strings.HasPrefix(entry.Name(), "python") {
+				// Extract version from directory name (e.g., "python3.14" -> "3.14")
+				version := strings.TrimPrefix(entry.Name(), "python")
+				if version != "" && version != entry.Name() {
+					return version
+				}
+			}
+		}
+	}
+	return ""
 }
 
 func cleanupOldVenvs(currentVenvDir string) {
